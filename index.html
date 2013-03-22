@@ -1,0 +1,183 @@
+<!--
+Currently a prototype
+
+expected width and height of columns: 300px by 200px
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <style>
+            body{
+                overflow-y: hidden;
+            }
+            .grid{
+                width: 100%;
+                max-width: 100%;
+                min-width: 300px;
+            }
+            
+            .col{
+                float: left;
+                border: 1px solid red;
+                box-sizing: border-box;
+            }
+            
+        </style>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
+    </head>
+    <body>
+        <div class="grid">
+            
+        </div>
+        
+        <script>
+            var grid = {
+                col_width: 300,
+                col_height: 200,
+                grid_width: 0,
+                columns: 0,
+                data: null,
+                ordered_images: [],
+                init: function(){
+                    this.get_data();
+                    this.update_width();
+                    this.set_cols();
+                    this.expand_dimensions();
+                    this.order_images();
+                    this.draw_images();
+                    
+                    $(window).on('resized', function(){
+                        grid.reinit();
+                    });
+                    
+                    $(window).on('resize', function(){
+                        $('.grid .col').remove();
+                        if(this.resizeTO) clearTimeout(this.resizeTO);
+                        this.resizeTO = setTimeout(function() {
+                            $(this).trigger('resized');
+                        }, 500);
+                    });
+                    
+                },
+                reinit: function(){
+                    this.ordered_images = [];
+                    this.get_data();
+                    this.update_width();
+                    this.set_cols();
+                    this.expand_dimensions();
+                    this.order_images();
+                    this.draw_images();
+                },
+                get_data: function(){
+                    this.data = [
+                        {
+                            order: 1,
+                            col: 1
+                        },
+                        {
+                            order: 2,
+                            col: 2
+                        },
+                        {
+                            order: 3,
+                            col: 2
+                        },
+                        {
+                            order: 4,
+                            col: 2
+                        },
+                        {
+                            order: 5,
+                            col: 1
+                        },
+                        {
+                            order: 6,
+                            col: 2
+                        },
+                        {
+                            order: 7,
+                            col: 1
+                        },
+                        {
+                            order: 8,
+                            col: 2
+                        }
+                    ];
+                    console.log(this.data);
+                },
+                update_width: function(){
+                    this.grid_width = $('.grid').width();
+                    console.log(this.grid_width);
+                },
+                set_cols: function(){
+                    columns = this.grid_width / this.col_width;
+                    this.columns = Math.floor(this.grid_width / this.col_width);
+                    console.log(columns,this.columns);
+                },
+                expand_dimensions: function(){
+                    this.expanded_width = this.grid_width / this.columns;
+                    this.expanded_height = (this.expanded_width - this.col_width) / this.col_width * this.col_height + this.col_height;
+                    console.log(this.expanded_width, this.expanded_height);
+                },
+                order_images: function(){
+                    var col_count = 0;
+                    var last_img_size = 0;
+                    var break_next = 0;
+                    
+                    while( this.data.length != 0 ){
+                        for( x=0; x< this.data.length; x++ ){
+                            new_col_count = this.data[x].col + col_count;
+                            
+                            if(new_col_count <= this.columns){
+                                col_count = new_col_count;
+                                this.ordered_images.push( this.data[x] );
+                                this.data.splice(x,1);
+                                
+                                if(col_count == this.columns){
+                                    col_count = 0;
+                                }
+                                break;
+                            }
+                        }
+                        
+                        if( last_img_size == this.data.length ){
+                            this.ordered_images.push( this.data[0] );
+                            this.data.splice(0,1);
+                        }else{
+                            last_img_size = this.data.length;
+                        }
+                    }
+                    //this.ordered_images = this.data;
+                    
+                },
+                draw_images: function(){
+                    var toggle = false;
+                    console.log('drawing');
+                    for( x in this.ordered_images ){
+                        order = this.ordered_images[x].order;
+                        span = this.ordered_images[x].col;
+                        width = this.expanded_width * span;
+                        height = this.expanded_height;
+                        if( toggle ){
+                            bgcolor = 'white';
+                        }else{
+                            bgcolor = 'black';
+                        }
+                        toggle = !toggle;
+                        $col = $('<div class="col span' + span + '" style="background-color: ' + bgcolor + '; width:' + width + 'px; height:' + height + 'px">' + order +'</div>');
+                        $('.grid').append($col);
+                    }
+                }
+            };
+            
+            $(document).ready( function(){
+                grid.init();
+            });
+            
+        </script>
+        
+    </body>
+</html>
