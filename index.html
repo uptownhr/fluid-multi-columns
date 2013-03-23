@@ -26,7 +26,6 @@ expected width and height of columns: 300px by 200px
             
         </style>
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
     </head>
     <body>
         <div class="grid">
@@ -73,54 +72,25 @@ expected width and height of columns: 300px by 200px
                 },
                 get_data: function(){
                     this.data = [
-                        {
-                            order: 1,
-                            col: 1
-                        },
-                        {
-                            order: 2,
-                            col: 2
-                        },
-                        {
-                            order: 3,
-                            col: 2
-                        },
-                        {
-                            order: 4,
-                            col: 2
-                        },
-                        {
-                            order: 5,
-                            col: 1
-                        },
-                        {
-                            order: 6,
-                            col: 2
-                        },
-                        {
-                            order: 7,
-                            col: 1
-                        },
-                        {
-                            order: 8,
-                            col: 2
-                        }
+                        
                     ];
-                    console.log(this.data);
+                    for(x=1; x<8; x++){
+                        this.data.push({
+                            order: x,
+                            col: Math.floor( Math.random() * 2 + 1 )
+                        });
+                    }
                 },
                 update_width: function(){
                     this.grid_width = $('.grid').width();
-                    console.log(this.grid_width);
                 },
                 set_cols: function(){
                     columns = this.grid_width / this.col_width;
                     this.columns = Math.floor(this.grid_width / this.col_width);
-                    console.log(columns,this.columns);
                 },
                 expand_dimensions: function(){
                     this.expanded_width = this.grid_width / this.columns;
                     this.expanded_height = (this.expanded_width - this.col_width) / this.col_width * this.col_height + this.col_height;
-                    console.log(this.expanded_width, this.expanded_height);
                 },
                 order_images: function(){
                     var col_count = 0;
@@ -144,8 +114,25 @@ expected width and height of columns: 300px by 200px
                         }
                         
                         if( last_img_size == this.data.length ){
-                            this.ordered_images.push( this.data[0] );
-                            this.data.splice(0,1);
+                            //check if last img can be replaced with better fitting col
+                            last_col_size = this.ordered_images[this.ordered_images.length-1];
+                            col_left = this.columns - (col_count - last_col_size.col);
+                            found = 0;
+                            if( col_left ){
+                                for(y=0; y < this.data.length; y++){
+                                    if( col_left == this.data[y].col ){
+                                        this.ordered_images.splice( this.ordered_images.length-1,0,this.data[0] );
+                                        this.data.splice(0,1);
+                                        found = 1;
+                                    }
+                                }
+                            }
+                            
+                            if( found == 0 ){
+                                this.ordered_images.push( this.data[0] );
+                                this.data.splice(0,1);
+                            }
+                            
                         }else{
                             last_img_size = this.data.length;
                         }
@@ -155,7 +142,6 @@ expected width and height of columns: 300px by 200px
                 },
                 draw_images: function(){
                     var toggle = false;
-                    console.log('drawing');
                     for( x in this.ordered_images ){
                         order = this.ordered_images[x].order;
                         span = this.ordered_images[x].col;
@@ -172,6 +158,18 @@ expected width and height of columns: 300px by 200px
                     }
                 }
             };
+            
+            var img_col = function(params){
+                var options = {
+                    width: 300,
+                    height: 200,
+                    container: 600
+                }
+                
+                $.extend(options, params);
+                
+                var el = $('<div class="row"></div>');
+            }
             
             $(document).ready( function(){
                 grid.init();
